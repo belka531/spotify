@@ -4,17 +4,19 @@ const bcrypt = require('bcrypt');
 
 const router = new Router()
 
-
-router.get('/users', (req, res, next) => {
-  User
-    .findAll()
-    .then(users => {
-      res.send({ users })
-    })
-    .catch(error => next(error))
-})
-
 router.post('/users', (req, res, next) => {
+  if (!Object(req.body).hasOwnProperty('email') || req.body.email === "") {
+    return res.status(400).send({
+      message: `email required`
+    })    
+  }
+
+  if (!Object(req.body).hasOwnProperty('password') || (req.body.password !== req.body.password_confirmation)) {
+    return res.status(400).send({
+      message: `Passwords do not match`
+    })
+  }
+
   const user = {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)

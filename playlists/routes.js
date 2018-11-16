@@ -1,9 +1,10 @@
 const { Router } = require('express')
 const Playlist = require('./model')
+const auth = require('../auth/middleware')
 
 const router = new Router()
 
-router.get('/playlists', (req, res, next) => {
+router.get('/playlists', auth, (req, res, next) => {
   Playlist
     .findAll()
     .then(playlists => {
@@ -12,7 +13,7 @@ router.get('/playlists', (req, res, next) => {
     .catch(error => next(error))
 })
 
-router.get('/playlists/:id', (req, res, next) => {
+router.get('/playlists/:id', auth, (req, res, next) => {
   Playlist
     .findById(req.params.id)
     .then(playlist => {
@@ -26,7 +27,7 @@ router.get('/playlists/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-router.post('/playlists', (req, res, next) => {
+router.post('/playlists', auth, (req, res, next) => {
   Playlist
     .create(req.body)
     .then(playlist => {
@@ -40,7 +41,7 @@ router.post('/playlists', (req, res, next) => {
     .catch(error => next(error))
 })
 
-router.delete('/playlists/:id', (req, res, next) => {
+router.delete('/playlists/:id', auth, (req, res, next) => {
   Playlist
     .findById(req.params.id)
     .then(playlist => {
