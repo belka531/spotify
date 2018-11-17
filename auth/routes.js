@@ -3,10 +3,7 @@ const { toJWT } = require('./jwt')
 const User = require('../users/model')
 const bcrypt = require('bcrypt');
 
-
-
 const router = new Router()
-
 
 router.post('/logins', (req, res, next) => {
   if (!req.body.email || !req.body.password) {
@@ -45,13 +42,5 @@ router.post('/logins', (req, res, next) => {
       })
     })
 })
-
-
-
-
-
-
-
-
 
 module.exports = router

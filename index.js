@@ -5,7 +5,6 @@ const authRouter = require('./auth/routes')
 const userRouter = require('./users/routes')
 const songRouter = require('./songs/routes')
 
-
 const app = express()
 const port = process.env.PORT || 4000
 

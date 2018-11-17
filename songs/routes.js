@@ -3,8 +3,6 @@ const Song = require('./model')
 const auth = require('../auth/middleware')
 const { toData } = require('../auth/jwt')
 const Playlist = require('../playlists/model')
-const Promise = require("bluebird");
-
 
 const router = new Router()
 
@@ -38,7 +36,7 @@ router.post('/playlists/:id/songs', auth, (req, res, next) => {
     .then(playlist => {
       if (!playlist) {
         return res.status(404).send({
-          message: `Could not found playlist`
+          message: `Could not find playlist`
         })
       }
 
@@ -52,7 +50,7 @@ router.post('/playlists/:id/songs', auth, (req, res, next) => {
         .then(song => {
           if (!song) {
             return res.status(404).send({
-              message: `Song does not exist`
+              message: `Could not find song`
             })
           }
           return res.status(201).send(song)
@@ -73,7 +71,7 @@ router.get('/artists', auth, (req, res, next) => {
       }
     })
     .then(playlists => {
-      const ids = playlists.map(pl=> pl.id)
+      const ids = playlists.map(pl => pl.id)
       Song
         .findAll({
           where: {
@@ -91,7 +89,7 @@ router.get('/artists', auth, (req, res, next) => {
 router.delete('/playlists/:id/songs/:songId', auth, (req, res, next) => {
   const auth = req.headers.authorization && req.headers.authorization.split(' ')
   const data = toData(auth[1])
-  
+
   Playlist
     .findOne({
       where: {
@@ -107,7 +105,7 @@ router.delete('/playlists/:id/songs/:songId', auth, (req, res, next) => {
       }
       Song
         .destroy({
-          where:{
+          where: {
             id: req.params.songId,
             playlistId: playlist.id
           }
@@ -126,39 +124,92 @@ router.put('/playlists/:id/songs/:songId', auth, (req, res, next) => {
   const auth = req.headers.authorization && req.headers.authorization.split(' ')
   const data = toData(auth[1])
 
-  Playlist
-    .findOne({
-      where: {
-        userId: data.userId,
-        id: req.params.id
-      }
-    })
-    .then(playlist => {
-      if (!playlist) {
-        return res.status(404).send({
-          message: `Could not find playlist`
-        })
-      }
+  if (req.body.playlistId) {
+    Playlist
+      .findOne({
+        where: {
+          userId: data.userId,
+          id: req.body.playlistId
+        }
+      })
+      .then(playlist => {
+        if (!playlist) {
+          return res.status(422).send({
+            message: `Playlist does not belong to you`
+          })
+        }
 
-      Song
-        .findOne({
-          where: {
-            id: req.params.songId,
-            playlistId: playlist.id,
-          }
-        })
-        .then(song => {
-          if (!song) {
-            return res.status(404).send({
-              message: `Could not find song`
-            })
-          }
+        Playlist
+          .findOne({
+            where: {
+              userId: data.userId,
+              id: req.params.id
+            }
+          })
+          .then(playlist => {
+            if (!playlist) {
+              return res.status(404).send({
+                message: `Could not find playlist`
+              })
+            }
 
-          return song.update(req.body).then(song => res.send(song))
-        })
-        .catch(error => next(error))
-    })
-    .catch(error => next(error))
-  })
+            Song
+              .findOne({
+                where: {
+                  id: req.params.songId,
+                  playlistId: playlist.id,
+                }
+              })
+              .then(song => {
+                if (!song) {
+                  return res.status(404).send({
+                    message: `Could not find song`
+                  })
+                }
+
+                return song.update(req.body).then(song => res.send(song))
+              })
+              .catch(error => next(error))
+          })
+          .catch(error => next(error))
+      })
+      .catch(error => next(error))
+  }
+  else {
+    Playlist
+      .findOne({
+        where: {
+          userId: data.userId,
+          id: req.params.id
+        }
+      })
+      .then(playlist => {
+        if (!playlist) {
+          return res.status(404).send({
+            message: `Could not find playlist`
+          })
+        }
+
+        Song
+          .findOne({
+            where: {
+              id: req.params.songId,
+              playlistId: playlist.id,
+            }
+          })
+          .then(song => {
+            if (!song) {
+              return res.status(404).send({
+                message: `Could not find song`
+              })
+            }
+
+            return song.update(req.body).then(song => res.send(song))
+          })
+          .catch(error => next(error))
+      })
+      .catch(error => next(error))
+  }
+})
 
 module.exports = router
