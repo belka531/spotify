@@ -4,5 +4,8 @@
     "jsonwebtoken": "^8.4.0",
     "pg": "6",
     "sequelize": "^4.41.2"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
